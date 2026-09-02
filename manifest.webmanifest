@@ -1,0 +1,13 @@
+{
+  "name": "Patrullajes SINAC",
+  "short_name": "Patrullajes",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef2ef",
+  "theme_color": "#235d43",
+  "description": "Registro de patrullajes con GPS, CRTM05, observaciones y fotografías.",
+  "icons": [
+    {"src":"app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}

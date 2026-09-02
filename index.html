@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#235d43">
+  <meta name="description" content="Formulario de campo para patrullajes SINAC con GPS, CRTM05, observaciones y registro fotográfico.">
+  <title>Patrullajes SINAC</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="app-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script defer src="assets/geo-fallback.js"></script>
+  <script defer src="assets/geo.js"></script>
+  <script defer src="assets/storage.js"></script>
+  <script defer src="data/catalogs.js"></script>
+  <script defer src="assets/app.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><div class="eyebrow">SINAC · ACC · BTMM</div><h1>Registro de patrullaje</h1></div>
+      <div id="patrolStatus" class="status-chip"><span class="dot"></span><span id="patrolStatusText">BORRADOR</span></div>
+    </div>
+  </header>
+
+  <main class="main">
+    <nav class="stepper" aria-label="Secciones">
+      <button type="button" class="step-btn current">Inicio</button>
+      <button type="button" class="step-btn">Posición</button>
+      <button type="button" class="step-btn">Observaciones</button>
+      <button type="button" class="step-btn">Finalización</button>
+    </nav>
+
+    <section class="panel current">
+      <div class="card">
+        <div class="section-head"><div class="section-number">1</div><div><h2>Inicio del patrullaje</h2><p>Datos de salida, equipo humano y vehículo.</p></div></div>
+        <div class="grid two">
+          <div class="field"><label class="required" for="startDate">Fecha</label><input id="startDate" name="startDate" type="date"></div>
+          <div class="field"><label class="required" for="startTime">Hora</label><input id="startTime" name="startTime" type="time"></div>
+          <div class="field"><label class="required" for="startPlace">Lugar de salida</label><select id="startPlace" name="startPlace"></select></div>
+          <div id="startOtherWrap" class="field hidden"><label class="required" for="startOtherPlace">Otro lugar</label><input id="startOtherPlace" name="startOtherPlace" type="text" placeholder="Especifique"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><div class="section-number">2</div><div><h3>Personal</h3><p>Seleccione el encargado y el personal que participa.</p></div></div>
+        <div class="grid two">
+          <div class="field"><label class="required" for="responsible">Encargado</label><select id="responsible" name="responsible"></select></div>
+          <div class="field"><span class="label">Catálogo de personal</span><button id="addPersonBtn" type="button" class="btn ghost">+ Agregar persona</button></div>
+        </div>
+        <div class="field" style="margin-top:14px"><span class="label">Personal participante</span><div id="personnelPills" class="catalog-box"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><div class="section-number">3</div><div><h3>Vehículo</h3><p>Datos básicos de salida.</p></div></div>
+        <div class="grid two">
+          <div class="field"><label class="required" for="vehicle">Vehículo</label><select id="vehicle" name="vehicle"></select></div>
+          <div class="field"><span class="label">Catálogo de vehículos</span><button id="addVehicleBtn" type="button" class="btn ghost">+ Registrar vehículo</button></div>
+          <div class="field"><label for="startOdometer">Kilometraje inicial</label><input id="startOdometer" name="startOdometer" type="number" min="0" step="1" inputmode="numeric" placeholder="km"></div>
+          <div class="field"><label for="startFuel">Combustible inicial</label><select id="startFuel" name="startFuel"></select></div>
+        </div>
+        <label class="checkbox-row" style="margin-top:14px"><input id="startVehicleCheck" name="startVehicleCheck" type="checkbox"><span>Se realizó revisión vehicular de inicio</span></label>
+      </div>
+
+      <div class="card">
+        <div class="warning">El navegador puede registrar el recorrido mientras la página permanece activa, pero Android/iOS pueden suspender la geolocalización si bloquean o cierran el navegador. El sistema guarda además una marca obligatoria en cada observación.</div>
+        <button id="startPatrolBtn" type="button" class="btn primary full" style="margin-top:14px">Iniciar patrullaje y registro GPS</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="card map-card">
+        <div class="map-toolbar"><strong>Mapa y posición</strong><button id="captureGpsBtn" type="button" class="btn secondary">Actualizar GPS</button><button id="fitMapBtn" type="button" class="btn ghost">Ver todo el recorrido</button><span id="gpsMessage" class="hint">Sin posición disponible.</span></div>
+        <div class="map-wrap"><div id="map"></div><div id="mapFallback" class="map-fallback hidden">El mapa no pudo cargarse. El registro GPS y CRTM05 puede continuar sin mapa.</div></div>
+        <div class="coords-strip">
+          <div class="metric"><span>CRTM05</span><strong id="crtmVal">—</strong></div>
+          <div class="metric"><span>Precisión</span><strong id="accVal">—</strong></div>
+          <div class="metric"><span>Latitud</span><strong id="latVal">—</strong></div>
+          <div class="metric"><span>Longitud</span><strong id="lonVal">—</strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="summary-grid">
+          <div class="summary-box"><span>Marcas GPS</span><strong id="trackCount">0</strong></div>
+          <div class="summary-box"><span>Distancia GPS</span><strong id="trackDistance">0 km</strong></div>
+          <div class="summary-box"><span>Duración</span><strong id="trackDuration">0 h 00 min</strong></div>
+          <div class="summary-box"><span>Observaciones</span><strong id="sumObsMap">—</strong></div>
+        </div>
+        <div class="hint" style="margin-top:10px">Regla de marcas: aproximadamente cada 25 m de desplazamiento o 30 s, además de puntos forzados al registrar observaciones y al finalizar.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="card">
+        <div class="section-head"><div class="section-number">+</div><div><h2>Registro de observaciones</h2><p>Cada observación conserva su propia coordenada, precisión, descripción y fotografías.</p></div></div>
+        <button id="newObsBtn" type="button" class="btn primary full">Registrar observación</button>
+      </div>
+      <div class="card"><div id="observationList" class="observation-list"></div></div>
+    </section>
+
+    <section class="panel">
+      <div class="card">
+        <div class="section-head"><div class="section-number">4</div><div><h2>Fin del patrullaje</h2><p>Datos de regreso y cierre.</p></div></div>
+        <div class="grid two">
+          <div class="field"><label class="required" for="endDate">Fecha</label><input id="endDate" name="endDate" type="date"></div>
+          <div class="field"><label class="required" for="endTime">Hora</label><input id="endTime" name="endTime" type="time"></div>
+          <div class="field"><label class="required" for="endPlace">Lugar de regreso</label><select id="endPlace" name="endPlace"></select></div>
+          <div id="endOtherWrap" class="field hidden"><label class="required" for="endOtherPlace">Otro lugar</label><input id="endOtherPlace" name="endOtherPlace" type="text"></div>
+          <div class="field"><label for="endOdometer">Kilometraje final</label><input id="endOdometer" name="endOdometer" type="number" min="0" step="1" inputmode="numeric"></div>
+          <div class="field"><label for="endFuel">Combustible final</label><select id="endFuel" name="endFuel"></select></div>
+        </div>
+        <label class="checkbox-row" style="margin-top:14px"><input id="endVehicleCheck" name="endVehicleCheck" type="checkbox"><span>Se realizó revisión vehicular de finalización</span></label>
+        <div class="field" style="margin-top:14px"><label for="generalNotes">Observaciones generales</label><textarea id="generalNotes" name="generalNotes" placeholder="Condiciones del patrullaje, accesos, incidentes, coordinación, vehículo u otros aspectos generales."></textarea></div>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><div class="section-number">₡</div><div><h3>Alimentación y hospedaje</h3><p>Marque lo correspondiente por funcionario.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Funcionario</th><th>Desayuno</th><th>Almuerzo</th><th>Cena</th><th>Hospedaje</th></tr></thead><tbody id="allowanceBody"></tbody></table></div>
+      </div>
+
+      <div class="card">
+        <button id="finalizeBtn" type="button" class="btn primary full">Finalizar patrullaje y registro GPS</button>
+      </div>
+
+      <div class="card">
+        <div class="section-head"><div class="section-number">✓</div><div><h3>Resumen</h3><p>Control rápido antes de exportar.</p></div></div>
+        <div class="summary-grid">
+          <div class="summary-box"><span>Duración</span><strong id="sumDuration">—</strong></div>
+          <div class="summary-box"><span>Recorrido GPS</span><strong id="sumGpsKm">—</strong></div>
+          <div class="summary-box"><span>Recorrido vehículo</span><strong id="sumVehicleKm">—</strong></div>
+          <div class="summary-box"><span>Observaciones</span><strong id="sumObs">0</strong></div>
+        </div>
+        <div id="summaryDetail" class="success" style="margin-top:12px"></div>
+        <div class="actions" style="margin-top:12px"><button id="exportJsonBtn" type="button" class="btn secondary">Exportar respaldo JSON</button><button id="exportGeoJsonBtn" type="button" class="btn secondary">Exportar GeoJSON</button><button id="resetBtn" type="button" class="btn danger">Nuevo patrullaje</button></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer-nav"><button id="prevBtn" type="button" class="btn ghost hidden">Anterior</button><button id="nextBtn" type="button" class="btn primary">Siguiente</button></div>
+</div>
+
+<div id="obsModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="obsModalTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="obsModalTitle">Nueva observación</h2><button id="closeObsModal" type="button" class="close-btn" aria-label="Cerrar">×</button></div>
+    <input id="obsCategory" type="hidden">
+    <div class="field"><span class="label required">Tipo de observación</span><div class="category-grid"><button type="button" class="category-btn" data-cat="Daño ambiental">Daño ambiental</button><button type="button" class="category-btn" data-cat="Vigilancia">Vigilancia</button><button type="button" class="category-btn" data-cat="Monitoreo">Monitoreo</button><button type="button" class="category-btn" data-cat="Otro">Otro</button></div></div>
+
+    <div id="sitadaFields" class="grid two hidden" style="margin-top:16px">
+      <div class="field"><label class="required" for="sitadaType">Tipo de denuncia SITADA</label><select id="sitadaType"></select></div>
+      <div class="field"><label for="sitadaInfraction">Tipo de infracción SITADA</label><input id="sitadaInfraction" list="sitadaInfractionList" placeholder="Seleccione o escriba"><datalist id="sitadaInfractionList"></datalist><div class="hint">El catálogo oficial de infracciones es dependiente del tipo de denuncia; el campo permite texto para no perder clasificaciones que no estén en la lista auxiliar.</div></div>
+    </div>
+
+    <div id="subtypeFields" class="field hidden" style="margin-top:16px"><label class="required" for="obsSubtype">Subtipo</label><select id="obsSubtype"><option value="">Seleccione…</option></select></div>
+    <div id="otherFields" class="field hidden" style="margin-top:16px"><label class="required" for="otherType">Tipo o motivo</label><input id="otherType" type="text"></div>
+
+    <div class="field" style="margin-top:16px"><label class="required" for="obsDescription">Descripción</label><textarea id="obsDescription" placeholder="Describa lo observado, condiciones del sitio, actuaciones realizadas, personas relacionadas y cualquier elemento relevante."></textarea></div>
+
+    <div class="card" style="box-shadow:none;margin-top:16px;margin-bottom:0"><div class="actions" style="align-items:center"><div style="flex:1"><strong>Coordenada de la observación</strong><div id="obsPositionText" class="hint">Se capturará la posición GPS al guardar.</div></div><button id="refreshObsGps" type="button" class="btn ghost">Actualizar posición</button></div></div>
+
+    <div class="field" style="margin-top:16px"><span class="label">Fotografías (máximo 3)</span><div id="photoGrid" class="photo-grid"></div></div>
+    <div class="actions right" style="margin-top:18px"><button id="cancelObsBtn" type="button" class="btn ghost">Cancelar</button><button id="saveObsBtn" type="button" class="btn primary">Guardar observación</button></div>
+  </div>
+</div>
+</body>
+</html>
