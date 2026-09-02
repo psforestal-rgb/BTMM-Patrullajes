@@ -1,5 +1,5 @@
-const CACHE='patrullajes-sinac-v3-1';
-const LOCAL=['./','./index.html','./assets/styles.css','./assets/app.js','./assets/storage.js','./assets/geo.js','./assets/geo-fallback.js','./data/catalogs.js','./manifest.webmanifest','./app-icon.svg'];
+const CACHE='patrullajes-sinac-v4-1';
+const LOCAL=['./','./index.html','./assets/styles.css','./assets/app.js','./assets/report.js','./assets/storage.js','./assets/geo.js','./assets/geo-fallback.js','./assets/vendor/jszip.min.js','./assets/img/sinac-logo.png','./assets/img/informe-corner-top.png','./assets/img/informe-corner-bottom.png','./data/catalogs.js','./manifest.webmanifest','./app-icon.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(LOCAL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{
