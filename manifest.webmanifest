@@ -1,12 +1,12 @@
 {
-  "name": "Patrullajes SINAC",
+  "name": "Patrullajes SINAC - ACC - BTMM",
   "short_name": "Patrullajes",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#eef2ef",
-  "theme_color": "#235d43",
-  "description": "Registro de patrullajes con GPS, CRTM05, observaciones y fotografías.",
+  "background_color": "#0F1512",
+  "theme_color": "#0F1512",
+  "description": "Informe de gira / patrullaje SINAC-ACC-BTMM con GPS, CRTM05, hallazgos SITADA, fotografías y generación de Word institucional. Funciona sin conexión.",
   "icons": [
     {"src":"app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
   ]
