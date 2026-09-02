@@ -31,78 +31,82 @@
   <main class="main">
     <form id="patrolForm" autocomplete="off">
 
-    <section id="tab-gira" class="tabpanel current">
+    <!-- ============ 1. INICIO ============ -->
+    <section id="tab-inicio" class="tabpanel current">
       <div class="card">
-        <div class="card-head"><span class="card-badge">A</span><div><h2>Datos generales</h2><p>Identificación administrativa de la gira.</p></div></div>
+        <div class="card-head"><span class="card-badge">A</span><div><h2>Inicio de gira</h2><p>Fecha, hora, área y origen de la salida.</p></div></div>
         <div class="grid">
-          <div class="field"><label class="required" for="reportDate">Fecha de informe</label><input id="reportDate" name="reportDate" type="date" data-essential="1"></div>
-          <div class="field"><label class="required" for="reportNumber">N.º de informe / oficio</label><input id="reportNumber" name="reportNumber" type="text" placeholder="SINAC-ACC-BTMM-…-2026" data-essential="1"></div>
-          <div class="field"><label class="required" for="asp">Área Silvestre Protegida</label><input id="asp" name="asp" type="text" list="aspList" placeholder="Ej. PN Los Quetzales" data-essential="1"></div>
-          <div class="field"><label class="required" for="recipient">Destinatario</label><input id="recipient" name="recipient" type="text" placeholder="Nombre y cargo" data-essential="1"></div>
-          <div class="field"><label class="required" for="activity">Actividad</label><input id="activity" name="activity" type="text" value="Patrullaje de Prevención, Protección y Control" data-essential="1"></div>
           <div class="field"><label class="required" for="tourDate">Fecha de gira</label><input id="tourDate" name="tourDate" type="date" data-essential="1"></div>
           <div class="field"><label class="required" for="startTime">Hora de inicio</label><input id="startTime" name="startTime" type="time" data-essential="1"></div>
-          <div class="field"><label for="endTime">Hora final</label><input id="endTime" name="endTime" type="time"></div>
-        </div>
-        <div class="grid narrow">
-          <div class="field"><label class="required" for="lugarSalida">Lugar de salida</label><select id="lugarSalida" name="lugarSalida" data-essential="1"></select></div>
-          <div id="lugarSalidaOtroWrap" class="field hidden"><label class="required" for="lugarSalidaOtro">Otro lugar de salida</label><input id="lugarSalidaOtro" name="lugarSalidaOtro" type="text"></div>
-          <div class="field"><label for="lugarRegreso">Lugar de regreso</label><select id="lugarRegreso" name="lugarRegreso"></select></div>
-          <div id="lugarRegresoOtroWrap" class="field hidden"><label for="lugarRegresoOtro">Otro lugar de regreso</label><input id="lugarRegresoOtro" name="lugarRegresoOtro" type="text"></div>
-          <div class="field"><label for="kilometers">Kilómetros recorridos</label><input id="kilometers" name="kilometers" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Se puede calcular desde el GPS"></div>
+          <div class="field"><label class="required" for="asp">Área Silvestre Protegida</label><input id="asp" name="asp" type="text" list="aspList" placeholder="Ej. PN Los Quetzales" data-essential="1"></div>
+          <div class="field"><label class="required" for="lugarSalida">Origen de la gira</label><select id="lugarSalida" name="lugarSalida" data-essential="1"></select></div>
+          <div id="lugarSalidaOtroWrap" class="field hidden"><label class="required" for="lugarSalidaOtro">Otro origen</label><input id="lugarSalidaOtro" name="lugarSalidaOtro" type="text" placeholder="Especifique"></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-head"><span class="card-badge">B</span><div><h2>Personal</h2><p>Encargado y personal que participa en la gira.</p></div></div>
+        <div class="card-head"><span class="card-badge">B</span><div><h2>Vehículo</h2><p>Placa, kilometraje y revisión previa.</p></div></div>
         <div class="grid">
-          <div class="field"><label class="required" for="encargado">Encargado</label><select id="encargado" name="encargado" data-essential="1"></select></div>
-          <div class="field"><span class="hint" style="text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:650;color:var(--muted)">Catálogo de personal</span><button id="addPersonBtn" type="button" class="btn ghost">+ Agregar persona</button></div>
-        </div>
-        <div class="field"><span class="hint" style="text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:650;color:var(--muted)">Personal participante</span><div id="personnelPills" class="catalog-box"></div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><span class="card-badge">C</span><div><h2>Vehículo</h2><p>Datos de salida y regreso.</p></div></div>
-        <div class="grid">
-          <div class="field"><label for="vehiculo">Vehículo</label><select id="vehiculo" name="vehiculo"></select></div>
-          <div class="field"><span class="hint" style="text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:650;color:var(--muted)">Catálogo de vehículos</span><button id="addVehicleBtn" type="button" class="btn ghost">+ Registrar vehículo</button></div>
-          <div class="field"><label for="odometroInicial">Kilometraje inicial</label><input id="odometroInicial" name="odometroInicial" type="number" min="0" step="1" inputmode="numeric"></div>
+          <div class="field"><label for="vehiculo">Placa del vehículo</label><select id="vehiculo" name="vehiculo"></select></div>
+          <div class="field"><span class="field-label">Catálogo de vehículos</span><button id="addVehicleBtn" type="button" class="btn ghost">+ Registrar vehículo</button></div>
+          <div class="field"><label for="odometroInicial">Kilometraje inicial</label><input id="odometroInicial" name="odometroInicial" type="number" min="0" step="1" inputmode="numeric" placeholder="km"></div>
           <div class="field"><label for="combustibleInicial">Combustible inicial</label><select id="combustibleInicial" name="combustibleInicial"></select></div>
-          <div class="field"><label for="odometroFinal">Kilometraje final</label><input id="odometroFinal" name="odometroFinal" type="number" min="0" step="1" inputmode="numeric"></div>
-          <div class="field"><label for="combustibleFinal">Combustible final</label><select id="combustibleFinal" name="combustibleFinal"></select></div>
         </div>
-        <label class="checkline"><input id="vehiculoCheckInicio" name="vehiculoCheckInicio" type="checkbox"><span>Revisión vehicular de inicio realizada</span></label>
-        <label class="checkline"><input id="vehiculoCheckFin" name="vehiculoCheckFin" type="checkbox"><span>Revisión vehicular de finalización realizada</span></label>
+        <label class="checkline"><input id="vehiculoCheckInicio" name="vehiculoCheckInicio" type="checkbox"><span>Se realizó la revisión vehicular previa</span></label>
       </div>
 
       <div class="card">
-        <h3 class="card-sub">Viáticos por funcionario</h3>
-        <div class="table-wrap"><table><thead><tr><th>Funcionario</th><th>Desayuno</th><th>Almuerzo</th><th>Cena</th><th>Hospedaje</th></tr></thead><tbody id="allowanceBody"></tbody></table></div>
+        <div class="card-head"><span class="card-badge">C</span><div><h2>Personal</h2><p>Encargado/a y funcionarios participantes.</p></div></div>
+        <div class="grid">
+          <div class="field"><label class="required" for="encargado">Encargado/a del patrullaje</label><select id="encargado" name="encargado" data-essential="1"></select></div>
+          <div class="field"><span class="field-label">Catálogo de personal</span><button id="addPersonBtn" type="button" class="btn ghost">+ Agregar persona</button></div>
+        </div>
+        <div class="field"><span class="field-label">Funcionarios participantes</span><div id="personnelPills" class="catalog-box"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-badge">D</span><div><h2>Voluntarios y otras instituciones</h2><p>Personas externas que acompañan la gira.</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="compName">Nombre</label><input id="compName" type="text"></div>
+          <div class="field"><label for="compRole">Institución / condición</label><input id="compRole" type="text" placeholder="Voluntario, Fuerza Pública, MINAE…"></div>
+        </div>
+        <button id="addCompanionBtn" type="button" class="btn outline full">Agregar participante externo</button>
+        <div id="companionList" class="list-stack"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-badge">E</span><div><h2>Identificación del informe</h2><p>Datos administrativos del oficio.</p></div></div>
+        <div class="grid">
+          <div class="field"><label class="required" for="reportNumber">N.º de informe / oficio</label><input id="reportNumber" name="reportNumber" type="text" placeholder="SINAC-ACC-BTMM-…-2026" data-essential="1"></div>
+          <div class="field"><label class="required" for="reportDate">Fecha de informe</label><input id="reportDate" name="reportDate" type="date" data-essential="1"></div>
+          <div class="field"><label class="required" for="recipient">Destinatario</label><input id="recipient" name="recipient" type="text" placeholder="Nombre y cargo" data-essential="1"></div>
+          <div class="field"><label class="required" for="activity">Actividad</label><input id="activity" name="activity" type="text" value="Patrullaje de Prevención, Protección y Control" data-essential="1"></div>
+        </div>
       </div>
     </section>
 
-    <section id="tab-accion" class="tabpanel">
+    <!-- ============ 2. REGISTROS ============ -->
+    <section id="tab-registros" class="tabpanel">
       <div class="card">
-        <div class="card-head"><span class="card-badge">D</span><div><h2>Tipo de acción realizada</h2><p>Toque para marcar. <span id="actionsCount"></span></p></div></div>
+        <div class="card-head"><span class="card-badge">F</span><div><h2>Tipo de acción realizada</h2><p>Toque para marcar. <span id="actionsCount"></span></p></div></div>
         <div id="actionChips" class="chip-row"></div>
         <div class="field"><label for="actionOther">Otro — detalle</label><input id="actionOther" name="actionOther" type="text" placeholder="Especifique otra acción"></div>
       </div>
+
       <div class="card">
         <h3 class="card-sub">Resultados</h3>
         <div id="resultChips" class="chip-row"></div>
         <div class="field"><label for="resultOther">Otros resultados</label><input id="resultOther" name="resultOther" type="text"></div>
       </div>
+
       <div class="card">
         <h3 class="card-sub">Evidencia observada (general)</h3>
         <div id="evidenceChips" class="chip-row"></div>
         <div class="field"><label for="evidenceOther">Otra evidencia</label><input id="evidenceOther" name="evidenceOther" type="text"></div>
       </div>
-    </section>
 
-    <section id="tab-ruta" class="tabpanel">
       <div class="card">
-        <div class="card-head"><span class="card-badge">E</span><div><h2>Ubicación</h2><p>División administrativa y coordenadas del sitio.</p></div></div>
+        <div class="card-head"><span class="card-badge">G</span><div><h2>Ubicación</h2><p>División administrativa y coordenadas del sitio.</p></div></div>
         <div class="grid narrow">
           <div class="field"><label class="required" for="province">Provincia</label><input id="province" name="province" type="text" data-essential="1"></div>
           <div class="field"><label class="required" for="canton">Cantón</label><input id="canton" name="canton" type="text" data-essential="1"></div>
@@ -171,11 +175,9 @@
         <label for="routeDescription">Descripción del recorrido</label>
         <textarea id="routeDescription" name="routeDescription" placeholder="Punto de salida, ruta seguida, punto final, desvíos, condiciones del acceso, hitos relevantes…"></textarea>
       </div>
-    </section>
 
-    <section id="tab-campo" class="tabpanel">
       <div class="card">
-        <div class="card-head"><span class="card-badge">F</span><div><h2>Personas relacionadas</h2><p>Contactos, imputados, informantes y testigos.</p></div></div>
+        <div class="card-head"><span class="card-badge">H</span><div><h2>Personas relacionadas</h2><p>Contactos, imputados, informantes y testigos.</p></div></div>
         <div class="grid">
           <div class="field"><label for="cName">Nombre</label><input id="cName" type="text"></div>
           <div class="field"><label for="cId">Cédula</label><input id="cId" type="text" inputmode="numeric"></div>
@@ -190,7 +192,7 @@
 
       <div class="card">
         <h3 class="card-sub">Hallazgos georreferenciados</h3>
-        <div class="field"><span class="hint required" style="text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:650;color:var(--muted)">Categoría</span>
+        <div class="field"><span class="field-label required">Categoría</span>
           <div class="chip-row">
             <button type="button" class="chip" data-fcat="Daño ambiental">Daño ambiental</button>
             <button type="button" class="chip" data-fcat="Vigilancia">Vigilancia</button>
@@ -210,7 +212,7 @@
         </div>
         <div class="field"><label class="required" for="fDesc">Descripción</label><textarea id="fDesc" placeholder="Describa lo observado, condiciones del sitio y elementos relevantes."></textarea></div>
         <div class="field"><label for="fAction">Medida adoptada</label><input id="fAction" type="text"></div>
-        <div class="field"><span class="hint" style="text-transform:uppercase;letter-spacing:.04em;font-size:12px;font-weight:650;color:var(--muted)">Fotografías (máximo 3)</span><div id="findingPhotoGrid" class="photo-grid"></div></div>
+        <div class="field"><span class="field-label">Fotografías (máximo 3)</span><div id="findingPhotoGrid" class="photo-grid"></div></div>
         <div class="actions">
           <button id="fillFindingGpsBtn" type="button" class="btn outline">Usar mi posición</button>
           <button id="addFindingBtn" type="button" class="btn primary">Agregar hallazgo</button>
@@ -219,23 +221,43 @@
       </div>
 
       <div class="card">
-        <div class="card-head"><span class="card-badge">G</span><div><h2>Descripción de resultados</h2><p>Narrativa principal del informe.</p></div></div>
-        <textarea id="resultsNarrative" name="resultsNarrative" data-essential="1" style="min-height:220px" placeholder="Describa cronológicamente salida, objetivo, recorrido, observaciones, personas atendidas, evidencias, mediciones, medidas adoptadas y cierre."></textarea>
-        <h3 class="card-sub" style="border-top:1px solid var(--bd);padding-top:14px">Recomendaciones</h3>
-        <textarea id="recommendations" name="recommendations" placeholder="Frecuencia de nuevos recorridos, remisiones, coordinaciones, medidas preventivas, seguimiento…"></textarea>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><span class="card-badge">H</span><div><h2>Fotografías generales</h2><p>No ligadas a un hallazgo puntual (equipo, vehículo, panorámicas).</p></div></div>
+        <div class="card-head"><span class="card-badge">I</span><div><h2>Fotografías generales</h2><p>No ligadas a un hallazgo puntual (equipo, vehículo, panorámicas).</p></div></div>
         <label for="photoInput" class="photo-upload-label">Tomar o adjuntar fotografías</label>
         <input id="photoInput" type="file" accept="image/*" capture="environment" multiple class="hidden">
         <div id="generalPhotoGrid" class="photo-grid"></div>
       </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-badge">J</span><div><h2>Descripción de resultados</h2><p>Narrativa principal del informe.</p></div></div>
+        <textarea id="resultsNarrative" name="resultsNarrative" data-essential="1" style="min-height:220px" placeholder="Describa cronológicamente salida, objetivo, recorrido, observaciones, personas atendidas, evidencias, mediciones, medidas adoptadas y cierre."></textarea>
+        <h3 class="card-sub" style="border-top:1px solid var(--bd);padding-top:14px">Recomendaciones</h3>
+        <textarea id="recommendations" name="recommendations" placeholder="Frecuencia de nuevos recorridos, remisiones, coordinaciones, medidas preventivas, seguimiento…"></textarea>
+      </div>
     </section>
 
-    <section id="tab-informe" class="tabpanel">
+    <!-- ============ 3. FIN DE GIRA ============ -->
+    <section id="tab-fin" class="tabpanel">
       <div class="card">
-        <div class="card-head"><span class="card-badge">I</span><div><h2>Personal y cierre</h2><p>Responsable, acompañantes y copia.</p></div></div>
+        <div class="card-head"><span class="card-badge">K</span><div><h2>Fin de gira</h2><p>Regreso, kilometraje y revisión final.</p></div></div>
+        <div class="grid">
+          <div class="field"><label for="endDate">Fecha final</label><input id="endDate" name="endDate" type="date"><span class="hint">Se completa con la fecha de gira; cámbiela si la gira terminó otro día.</span></div>
+          <div class="field"><label for="endTime">Hora final</label><input id="endTime" name="endTime" type="time"></div>
+          <div class="field"><label for="lugarRegreso">Lugar de regreso</label><select id="lugarRegreso" name="lugarRegreso"></select></div>
+          <div id="lugarRegresoOtroWrap" class="field hidden"><label for="lugarRegresoOtro">Otro lugar de regreso</label><input id="lugarRegresoOtro" name="lugarRegresoOtro" type="text"></div>
+          <div class="field"><label for="odometroFinal">Kilometraje final</label><input id="odometroFinal" name="odometroFinal" type="number" min="0" step="1" inputmode="numeric" placeholder="km"></div>
+          <div class="field"><label for="combustibleFinal">Combustible final</label><select id="combustibleFinal" name="combustibleFinal"></select></div>
+          <div class="field"><label for="kilometers">Kilómetros recorridos</label><input id="kilometers" name="kilometers" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Se puede calcular desde el GPS"></div>
+        </div>
+        <label class="checkline"><input id="vehiculoCheckFin" name="vehiculoCheckFin" type="checkbox"><span>Se realizó la revisión vehicular final</span></label>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-badge">L</span><div><h2>Alimentación y hospedaje</h2><p>Marque lo correspondiente por cada participante.</p></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Participante</th><th>Desayuno</th><th>Almuerzo</th><th>Cena</th><th>Hospedaje</th></tr></thead><tbody id="allowanceBody"></tbody></table></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-badge">M</span><div><h2>Responsable y cierre</h2><p>Firma del informe y copia.</p></div></div>
         <div class="grid">
           <div class="field"><label class="required" for="responsibleName">Funcionario responsable</label><input id="responsibleName" name="responsibleName" type="text" data-essential="1"></div>
           <div class="field"><label for="responsibleId">Cédula</label><input id="responsibleId" name="responsibleId" type="text" inputmode="numeric"></div>
@@ -244,19 +266,10 @@
           <div class="field"><label for="cc">CC</label><input id="cc" name="cc" type="text" value="Archivo"></div>
           <div class="field"><label for="unit">Unidad / sector</label><input id="unit" name="unit" type="text" placeholder="PNLQ / PNTMM / La Esperanza"></div>
         </div>
-        <div style="border-top:1px solid var(--bd);padding-top:14px;display:flex;flex-direction:column;gap:12px">
-          <h3 class="card-sub">Acompañantes (externos a la institución)</h3>
-          <div class="grid">
-            <div class="field"><label for="compName">Nombre</label><input id="compName" type="text"></div>
-            <div class="field"><label for="compRole">Institución / cargo</label><input id="compRole" type="text"></div>
-          </div>
-          <button id="addCompanionBtn" type="button" class="btn outline full">Agregar acompañante</button>
-          <div id="companionList" class="list-stack"></div>
-        </div>
       </div>
 
       <div class="card">
-        <div class="card-head"><span class="card-badge">J</span><div><h2>Vista previa</h2><p>Resumen legible del informe.</p></div></div>
+        <div class="card-head"><span class="card-badge">N</span><div><h2>Vista previa</h2><p>Resumen legible del informe.</p></div></div>
         <div id="summaryPreview"></div>
         <details>
           <summary>Ver documento tamaño carta</summary>
@@ -282,12 +295,10 @@
     </form>
   </main>
 
-  <nav class="bottom-nav">
-    <button type="button" class="nav-btn current" data-tab="gira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M8 2v4M16 2v4M3 10h18"></path></svg>Gira</button>
-    <button type="button" class="nav-btn" data-tab="accion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Acción</button>
-    <button type="button" class="nav-btn" data-tab="ruta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 20l-6-3V4l6 3 6-3 6 3v13l-6-3-6 3z"></path><path d="M9 7v13M15 4v13"></path></svg>Ruta</button>
-    <button type="button" class="nav-btn" data-tab="campo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Campo</button>
-    <button type="button" class="nav-btn" data-tab="informe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h5"></path></svg>Informe</button>
+  <nav class="bottom-nav bottom-nav-3">
+    <button type="button" class="nav-btn current" data-tab="inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l7-8 7 8"></path><path d="M7 11v9h10v-9"></path></svg>Inicio</button>
+    <button type="button" class="nav-btn" data-tab="registros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>Registros</button>
+    <button type="button" class="nav-btn" data-tab="fin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4h9l1 2h6v9h-7l-1-2H6"></path><path d="M4 21h0"></path></svg>Fin de gira</button>
   </nav>
 
   <div id="toast" class="toast"></div>
