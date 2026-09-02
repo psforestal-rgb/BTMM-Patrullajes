@@ -11,11 +11,19 @@ Esta versión reconstruye el sitio a partir de dos entregas anteriores que se ha
 
 Esta versión fusiona ambas: conserva el diseño, el membrete y la exportación a Word de la primera, e incorpora los catálogos operativos y la taxonomía SITADA de la segunda.
 
+## Estructura de la aplicación (3 secciones)
+
+La captura de campo está organizada en tres pantallas, navegables desde la barra inferior:
+
+1. **Inicio** — fecha y hora de salida, Área Silvestre Protegida, origen de la gira, placa del vehículo con kilometraje inicial, combustible y revisión vehicular previa, encargado/a del patrullaje, funcionarios participantes, voluntarios o personal de otras instituciones, y la identificación administrativa del oficio.
+2. **Registros** — tipo de acción, resultados y evidencia observada; ubicación y coordenadas; captura GPS y registro continuo del recorrido con mapa; personas relacionadas; hallazgos georreferenciados con fotografías; fotografías generales; descripción de resultados y recomendaciones.
+3. **Fin de gira** — fecha final (toma por defecto la fecha de inicio), hora final, lugar de regreso, kilometraje final, combustible final, revisión vehicular final, la marca de desayuno/almuerzo/cena/hospedaje por cada participante, el responsable que firma, la vista previa y la generación del Word y demás exportaciones.
+
 ## Funciones incluidas
 
 - **Informe de gira institucional**: identificación (oficio, ASP, destinatario, actividad), fecha/hora de gira, tipo de acción/resultados/evidencia general, ubicación administrativa y narrativa de resultados y recomendaciones.
 - **Personal y vehículo**: catálogos locales reutilizables de personal y vehículos, encargado y personal participante, kilometraje y combustible inicial/final, revisión vehicular, lugar de salida/regreso.
-- **Viáticos por funcionario**: tabla de desayuno/almuerzo/cena/hospedaje por cada persona participante.
+- **Alimentación y hospedaje por participante**: tabla de desayuno/almuerzo/cena/hospedaje que incluye al encargado/a, a los funcionarios participantes y a los voluntarios o personal de otras instituciones.
 - **GPS y CRTM05**: captura puntual y registro continuo del recorrido (cada ~25 m o 30 s), con conversión a **CR05 / CRTM05 (EPSG:5367)** vía Proj4 cuando está disponible y cálculo de respaldo sin dependencias si no lo está.
 - **Mapa sin conexión**: cuadrícula CRTM05 dibujada en `<canvas>` con los puntos del recorrido, más la opción de cargar una imagen georreferenciada (hoja cartográfica u ortofoto) indicando sus esquinas en CRTM05 — funciona completamente sin internet.
 - **Mapa en línea opcional**: OpenStreetMap e imagen aérea Esri (Leaflet), colapsado por defecto, para cuando sí hay conexión.
@@ -25,7 +33,7 @@ Esta versión fusiona ambas: conserva el diseño, el membrete y la exportación 
   - Monitoreo: Amenaza / Especie / Ecosistema.
   - Otro.
   - Hasta 3 fotografías por hallazgo, comprimidas en el dispositivo y almacenadas en IndexedDB.
-- **Personas relacionadas** (contactos, imputados, informantes, testigos) y **acompañantes** externos a la institución.
+- **Personas relacionadas** (contactos, imputados, informantes, testigos) y **voluntarios o personal de otras instituciones** que acompañan la gira.
 - **Fotografías generales** no ligadas a un hallazgo puntual (equipo, vehículo, panorámicas).
 - **Generación de informe Word (.docx)** con membrete oficial SINAC/MINAE, franjas decorativas, tablas de personas/hallazgos/viáticos y registro fotográfico — construido en el dispositivo con JSZip (vendorizado localmente, sin depender de una CDN) y **funciona sin conexión**.
 - **Vista previa** del informe en dos formatos: resumen legible y documento tamaño carta.
@@ -34,10 +42,11 @@ Esta versión fusiona ambas: conserva el diseño, el membrete y la exportación 
 
 ## Decisiones de fusión (para que quede explícito qué se decidió y por qué)
 
-- El **modo de captura GPS** se simplificó a uno solo: el registro continuo automático (25 m / 30 s) del prototipo con catálogos, activado con un botón dedicado en la pestaña "Ruta". Se eliminó el segundo concepto de "modo patrullaje" con intervalo/distancia configurable del primer prototipo (30 min / 1 km) por ser redundante con el anterior y para no confundir con dos formas distintas de iniciar el registro.
+- El **modo de captura GPS** se simplificó a uno solo: el registro continuo automático (25 m / 30 s) del prototipo con catálogos, activado con un botón dedicado en la sección "Registros". Se eliminó el segundo concepto de "modo patrullaje" con intervalo/distancia configurable del primer prototipo (30 min / 1 km) por ser redundante con el anterior y para no confundir con dos formas distintas de iniciar el registro.
 - Los **hallazgos** ahora combinan ambas versiones: conservan la clasificación oficial SITADA (Daño ambiental/Vigilancia/Monitoreo/Otro) y, además, cada uno admite hasta 3 fotografías propias (antes solo existían fotografías generales sin vincular a un hallazgo).
-- Los **viáticos** se manejan por funcionario en tabla (como en la versión con catálogos), en vez del campo global de desayuno/almuerzo del primer prototipo; el Word institucional refleja esta tabla.
-- La navegación es por **pestañas libres** (Gira / Acción / Ruta / Campo / Informe), como en el primer prototipo, en vez del asistente de 4 pasos con bloqueo de la versión con catálogos — se puede completar cualquier sección en cualquier momento. La validación de campos obligatorios para generar el Word se mantiene como control de calidad antes de exportar.
+- La **alimentación y el hospedaje** se marcan por participante en una tabla (como en la versión con catálogos), en vez del campo global de desayuno/almuerzo del primer prototipo. La tabla incluye también a los voluntarios y al personal de otras instituciones, porque también participan de la gira; el Word institucional refleja esta tabla.
+- La navegación es por **tres secciones libres** (Inicio / Registros / Fin de gira), que siguen el orden real de una gira, en vez del asistente de 4 pasos con bloqueo de la versión con catálogos — se puede completar cualquier sección en cualquier momento y volver atrás. La validación de campos obligatorios para generar el Word se mantiene como control de calidad antes de exportar.
+- La **fecha final** se completa automáticamente con la fecha de inicio (el caso habitual) y deja de seguirla en cuanto el usuario la cambia a mano, para no sobrescribir una gira de varios días.
 - Las imágenes institucionales (logo MINAE/SINAC y franjas decorativas) se extrajeron como archivos PNG en `assets/img/` en vez de vivir como texto base64 dentro del JavaScript, para que el navegador y el Service Worker las cacheen de forma nativa.
 
 ## SITADA

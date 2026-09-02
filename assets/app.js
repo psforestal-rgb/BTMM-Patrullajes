@@ -7,7 +7,7 @@
   const LS_THEME = 'patrullajes-sinac:v4:theme';
   const TRACK_MIN_METERS = 25;
   const TRACK_MAX_SECONDS = 30;
-  const TABS = ['gira', 'accion', 'ruta', 'campo', 'informe'];
+  const TABS = ['inicio', 'registros', 'fin'];
 
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -21,7 +21,7 @@
 
   let state = loadState();
   let catalogs = loadCatalogs();
-  let currentTab = 'gira';
+  let currentTab = TABS[0];
   let editingFindingId = null;
   let pendingFindingPhotoBlobs = [null, null, null];
   let watchId = null, pollTimer = null, lastWatchFix = null;
@@ -33,7 +33,7 @@
   function blankState() {
     return {
       version: 4, id: uid('PAT'), status: 'draft',
-      report: { reportDate: '', reportNumber: '', asp: '', recipient: '', activity: 'Patrullaje de Prevención, Protección y Control', tourDate: '', startTime: '', endTime: '', kilometers: '' },
+      report: { reportDate: '', reportNumber: '', asp: '', recipient: '', activity: 'Patrullaje de Prevención, Protección y Control', tourDate: '', startTime: '', endDate: '', endTime: '', kilometers: '' },
       location: { province: '', canton: '', district: '', hamlet: '', exactAddress: '', mapSheet: '', crtmX: '', crtmY: '' },
       lugarSalida: '', lugarSalidaOtro: '', lugarRegreso: '', lugarRegresoOtro: '',
       encargado: '', personnel: [],
@@ -44,7 +44,7 @@
       track: [], patrolActive: false,
       basemapKey: null, bounds: null, routeDescription: '',
       contacts: [], findings: [], companions: [], generalPhotos: [],
-      resultsNarrative: '', recommendations: '',
+      resultsNarrative: '', recommendations: '', endDateTouched: false,
       responsibleName: '', responsibleId: '', responsiblePosition: '', signatureText: 'Firmado de forma digital', cc: 'Archivo', unit: '',
       theme: null,
       createdAt: isoNow(), updatedAt: isoNow()
@@ -87,8 +87,8 @@
     $$('.tabpanel').forEach(p => p.classList.toggle('current', p.id === 'tab-' + tab));
     $$('.nav-btn').forEach(b => b.classList.toggle('current', b.dataset.tab === tab));
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (tab === 'informe') renderPreview();
-    if (tab === 'ruta') { drawOfflineMap(); if (onlineMapReady) setTimeout(() => onlineMap.invalidateSize(), 50); }
+    if (tab === 'fin') { syncEndDateDefault(); renderAllowances(); renderPreview(); }
+    if (tab === 'registros') { drawOfflineMap(); if (onlineMapReady) setTimeout(() => onlineMap.invalidateSize(), 50); }
   }
 
   // ---------- generic form binding ----------
@@ -185,25 +185,44 @@
   function participantIds() { return unique([state.encargado, ...state.personnel].filter(Boolean)); }
   function unique(arr) { return [...new Set(arr)]; }
 
+  // Participantes de la gira para alimentación y hospedaje: encargado, funcionarios
+  // participantes y las personas externas (voluntarios u otras instituciones).
+  function allowanceParticipants() {
+    const rows = participantIds().map(id => ({ id, name: getPersonName(id) }));
+    state.companions.forEach(c => rows.push({ id: c.id, name: c.name + (c.role ? ` (${c.role})` : '') }));
+    return rows;
+  }
+
   function renderAllowances() {
     const tbody = $('#allowanceBody');
-    const ids = participantIds();
-    if (!ids.length) { tbody.innerHTML = `<tr><td colspan="5" class="hint">Seleccione encargado y personal en la sección Personal.</td></tr>`; return; }
-    tbody.innerHTML = ids.map(id => {
+    const rows = allowanceParticipants();
+    if (!rows.length) { tbody.innerHTML = `<tr><td colspan="5" class="hint">Seleccione encargado/a y personal en la sección Inicio.</td></tr>`; return; }
+    tbody.innerHTML = rows.map(({ id, name }) => {
       const a = state.allowances[id] || {};
-      return `<tr><td>${escapeHtml(getPersonName(id))}</td>${['breakfast', 'lunch', 'dinner', 'lodging'].map(k => `<td class="center"><input type="checkbox" data-allow-person="${escapeAttr(id)}" data-allow-key="${k}" ${a[k] ? 'checked' : ''}></td>`).join('')}</tr>`;
+      return `<tr><td>${escapeHtml(name)}</td>${['breakfast', 'lunch', 'dinner', 'lodging'].map(k => `<td class="center"><input type="checkbox" data-allow-person="${escapeAttr(id)}" data-allow-key="${k}" ${a[k] ? 'checked' : ''}></td>`).join('')}</tr>`;
     }).join('');
     $$('[data-allow-person]', tbody).forEach(cb => cb.addEventListener('change', () => {
       const id = cb.dataset.allowPerson, key = cb.dataset.allowKey;
       state.allowances[id] = state.allowances[id] || {};
       state.allowances[id][key] = cb.checked;
       queueSave();
+      if (currentTab === 'fin') renderPreview();
     }));
   }
 
   function toggleOtherPlace(which) {
     const sel = $(`#${which === 'salida' ? 'lugarSalida' : 'lugarRegreso'}`);
     $(`#lugar${which === 'salida' ? 'Salida' : 'Regreso'}OtroWrap`).classList.toggle('hidden', sel.value !== 'Otro');
+  }
+
+  // La gira normalmente termina el mismo día: la fecha final sigue a la de inicio
+  // mientras el usuario no la haya cambiado a mano (state.endDateTouched).
+  function syncEndDateDefault() {
+    if (state.endDateTouched) return;
+    const tourDate = $('#tourDate').value || state.report.tourDate;
+    if (!tourDate || state.report.endDate === tourDate) return;
+    state.report.endDate = tourDate;
+    applyFormValue('endDate', tourDate);
   }
 
   // ---------- GPS ----------
@@ -267,6 +286,7 @@
     watchId = null; clearInterval(pollTimer); lastWatchFix = null;
     state.patrolActive = false;
     if (!state.report.endTime) { state.report.endTime = nowTime(); applyFormValue('endTime', state.report.endTime); }
+    if (!state.report.endDate) { state.report.endDate = todayStr(); applyFormValue('endDate', state.report.endDate); }
     renderPatrolUI();
     toast('Registro GPS detenido.');
     queueSave();
@@ -440,15 +460,19 @@
     $$('[data-rm-contact]', box).forEach(b => b.addEventListener('click', () => removeContact(b.dataset.rmContact)));
   }
 
-  // ---------- acompañantes ----------
+  // ---------- voluntarios y personal de otras instituciones ----------
   function addCompanion() {
     const name = gv('compName');
-    if (!name) return toast('Indique el nombre del acompañante.');
+    if (!name) return toast('Indique el nombre del participante externo.');
     state.companions.push({ id: uid('cp'), name, role: gv('compRole') });
     clr(['compName', 'compRole']);
-    renderCompanions(); queueSave();
+    renderCompanions(); renderAllowances(); queueSave();
   }
-  function removeCompanion(id) { state.companions = state.companions.filter(x => x.id !== id); renderCompanions(); queueSave(); }
+  function removeCompanion(id) {
+    state.companions = state.companions.filter(x => x.id !== id);
+    delete state.allowances[id];
+    renderCompanions(); renderAllowances(); queueSave();
+  }
   function renderCompanions() {
     const box = $('#companionList');
     box.innerHTML = state.companions.map(c => `<div class="list-item"><div class="body"><div class="title">${escapeHtml(c.name)}</div><div class="meta">${escapeHtml(c.role || '')}</div></div><button type="button" class="btn small danger-outline" data-rm-comp="${c.id}">Quitar</button></div>`).join('');
@@ -552,7 +576,7 @@
     $('#fDesc').value = f.desc || ''; $('#fAction').value = f.action || '';
     $('#addFindingBtn').textContent = 'Guardar cambios';
     renderFindingPhotoSlots(f.photos || []);
-    goTab('campo'); document.getElementById('fDesc').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    goTab('registros'); document.getElementById('fDesc').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   async function removeFinding(id) {
     const f = state.findings.find(x => x.id === id); if (!f || !confirm('¿Eliminar este hallazgo y sus fotografías?')) return;
@@ -637,7 +661,7 @@
     return out;
   }
   function blobToDataURL(blob) { return new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); }); }
-  function allowanceRows() { return participantIds().map(id => Object.assign({ name: getPersonName(id) }, state.allowances[id] || {})); }
+  function allowanceRows() { return allowanceParticipants().map(({ id, name }) => Object.assign({ name }, state.allowances[id] || {})); }
 
   async function reportState() {
     return { contacts: state.contacts, findings: await resolvedFindings(), companions: state.companions, generalPhotos: await resolvedGeneralPhotos(), track: state.track, allowances: allowanceRows() };
@@ -657,17 +681,17 @@
     let h = head('Identificación');
     h += row('Fecha de informe', window.SINAC_REPORT.fmtDate(f.reportDate)) + row('N.º informe', f.reportNumber) + row('ASP', f.asp) + row('Destinatario', f.recipient) + row('Actividad', f.activity);
     h += head('Gira');
-    h += row('Fecha de gira', window.SINAC_REPORT.fmtDate(f.tourDate)) + row('Horario', (f.startTime || '') + (f.endTime ? ' – ' + f.endTime : '')) + row('Kilómetros', f.kilometers) + row('Viáticos', window.SINAC_REPORT.viaticosText(s.allowances));
+    h += row('Fecha de gira', window.SINAC_REPORT.fmtDate(f.tourDate)) + row('Fecha final', window.SINAC_REPORT.fmtDate(f.endDate)) + row('Horario', (f.startTime || '') + (f.endTime ? ' – ' + f.endTime : '')) + row('Kilómetros', f.kilometers) + row('Alimentación y hospedaje', window.SINAC_REPORT.viaticosText(s.allowances));
     h += head('Personal y vehículo');
-    h += row('Encargado', f.encargadoNombre) + row('Personal participante', f.personalNombres.join(', ')) + row('Vehículo', f.vehiculoLabel) + row('Lugar de salida', f.lugarSalida) + row('Lugar de regreso', f.lugarRegreso);
+    h += row('Encargado/a', f.encargadoNombre) + row('Funcionarios participantes', f.personalNombres.join(', ')) + row('Voluntarios / otras instituciones', s.companions.map(c => c.name + (c.role ? ` (${c.role})` : '')).join(', ')) + row('Vehículo', f.vehiculoLabel) + row('Origen de la gira', f.lugarSalida) + row('Lugar de regreso', f.lugarRegreso);
     h += head('Ubicación');
     h += row('Lugar', [f.province, f.canton, f.district, f.hamlet].filter(Boolean).join(' · ')) + row('Dirección', f.exactAddress) + row('CRTM05', (f.crtmX || '') + (f.crtmY ? ' E / ' + f.crtmY + ' N' : ''));
     h += head('Marcado');
     h += row('Acción', f.actions.join(', ') || '—') + row('Resultados', f.results.join(', ') || '—') + row('Evidencia', f.evidence.join(', ') || '—');
     h += head('Recorrido');
     h += row('Puntos registrados', String(state.track.length)) + row('Distancia GPS', (trackMeters() / 1000).toFixed(2) + ' km');
-    h += head('Campo');
-    h += row('Personas', String(s.contacts.length)) + row('Hallazgos', String(s.findings.length)) + row('Fotografías', String(s.generalPhotos.length + s.findings.reduce((n, x) => n + x.photos.length, 0))) + row('Acompañantes', String(s.companions.length));
+    h += head('Registros');
+    h += row('Personas', String(s.contacts.length)) + row('Hallazgos', String(s.findings.length)) + row('Fotografías', String(s.generalPhotos.length + s.findings.reduce((n, x) => n + x.photos.length, 0)));
     if (f.resultsNarrative) h += head('Descripción de resultados') + `<p class="summary-text">${escapeHtml(f.resultsNarrative)}</p>`;
     if (f.recommendations) h += head('Recomendaciones') + `<p class="summary-text">${escapeHtml(f.recommendations)}</p>`;
     h += head('Cierre') + row('Responsable', f.responsibleName) + row('Cargo', f.responsiblePosition) + row('Firma', f.signatureText) + row('CC', f.cc);
@@ -746,7 +770,14 @@
 
     $$('#patrolForm [name]').forEach(el => {
       const ev = el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input';
-      el.addEventListener(ev, () => { queueSave(); updateProgress(); if (currentTab === 'informe') renderPreview(); });
+      el.addEventListener(ev, () => { queueSave(); updateProgress(); if (currentTab === 'fin') renderPreview(); });
+    });
+    $('#tourDate').addEventListener('change', () => { state.report.tourDate = $('#tourDate').value; syncEndDateDefault(); queueSave(); });
+    $('#endDate').addEventListener('change', () => {
+      const v = $('#endDate').value;
+      state.report.endDate = v;
+      state.endDateTouched = !!v && v !== ($('#tourDate').value || state.report.tourDate);
+      queueSave();
     });
     $('#lugarSalida').addEventListener('change', () => { state.lugarSalida = $('#lugarSalida').value; toggleOtherPlace('salida'); queueSave(); });
     $('#lugarSalidaOtro').addEventListener('input', () => { state.lugarSalidaOtro = $('#lugarSalidaOtro').value; queueSave(); });
@@ -793,7 +824,7 @@
   function formSyncFromState() {
     applyFormValue('reportDate', state.report.reportDate); applyFormValue('reportNumber', state.report.reportNumber); applyFormValue('asp', state.report.asp);
     applyFormValue('recipient', state.report.recipient); applyFormValue('activity', state.report.activity); applyFormValue('tourDate', state.report.tourDate);
-    applyFormValue('startTime', state.report.startTime); applyFormValue('endTime', state.report.endTime); applyFormValue('kilometers', state.report.kilometers);
+    applyFormValue('startTime', state.report.startTime); applyFormValue('endDate', state.report.endDate); applyFormValue('endTime', state.report.endTime); applyFormValue('kilometers', state.report.kilometers);
     $('#lugarSalida').value = state.lugarSalida; $('#lugarRegreso').value = state.lugarRegreso;
     applyFormValue('lugarSalidaOtro', state.lugarSalidaOtro); applyFormValue('lugarRegresoOtro', state.lugarRegresoOtro);
     toggleOtherPlace('salida'); toggleOtherPlace('regreso');
@@ -815,7 +846,8 @@
     // Reflect flat form fields the user may have typed before a debounce tick back into state on every save.
     const fd = formData();
     state.report.reportDate = fd.reportDate; state.report.reportNumber = fd.reportNumber; state.report.asp = fd.asp; state.report.recipient = fd.recipient;
-    state.report.activity = fd.activity; state.report.tourDate = fd.tourDate; state.report.startTime = fd.startTime; state.report.endTime = fd.endTime; state.report.kilometers = fd.kilometers;
+    state.report.activity = fd.activity; state.report.tourDate = fd.tourDate; state.report.startTime = fd.startTime;
+    state.report.endDate = fd.endDate; state.report.endTime = fd.endTime; state.report.kilometers = fd.kilometers;
     state.actionOther = fd.actionOther; state.resultOther = fd.resultOther; state.evidenceOther = fd.evidenceOther;
     state.location.province = fd.province; state.location.canton = fd.canton; state.location.district = fd.district; state.location.hamlet = fd.hamlet;
     state.location.exactAddress = fd.exactAddress; state.location.mapSheet = fd.mapSheet; state.location.crtmX = fd.crtmX; state.location.crtmY = fd.crtmY;
@@ -828,6 +860,7 @@
     populateStaticSelects();
     renderCatalogs();
     formSyncFromState();
+    syncEndDateDefault();
     renderChipState();
     renderContacts(); renderCompanions(); renderFindings();
     renderTrackStats(); renderTrackList();
@@ -837,7 +870,7 @@
     await renderGeneralPhotos();
     clearFindingForm();
     if (state.basemapKey) { const blob = await PatrolStore.get(state.basemapKey).catch(() => null); if (blob) basemapImg = await blobToImage(blob); }
-    goTab(isReset ? 'gira' : currentTab);
+    goTab(isReset ? TABS[0] : currentTab);
     setTimeout(drawOfflineMap, 60);
     if (state.patrolActive) startPatrol();
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -850,7 +883,7 @@
     if (!state.report.tourDate) { state.report.tourDate = todayStr(); }
     wireEvents();
     boot(false);
-    setInterval(() => { if (currentTab === 'informe') renderPreview(); syncStateFromFormOnLoad(); }, 20000);
+    setInterval(() => { if (currentTab === 'fin') renderPreview(); syncStateFromFormOnLoad(); }, 20000);
     window.addEventListener('input', e => { if (e.target.closest('#patrolForm')) syncStateFromFormOnLoad(); });
     window.addEventListener('change', e => { if (e.target.closest('#patrolForm')) syncStateFromFormOnLoad(); });
   });

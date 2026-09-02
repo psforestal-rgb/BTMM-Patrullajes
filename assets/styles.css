@@ -53,6 +53,8 @@ canvas{touch-action:none}
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .grid.narrow{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 .field{display:flex;flex-direction:column;gap:6px}
+.field-label{display:block;font-weight:650;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field-label.required::after{content:' *';color:var(--danger)}
 .checkline{display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;color:var(--tx);font-weight:500}
 .hint{font-size:11.5px;color:var(--muted)}
 
@@ -155,7 +157,8 @@ summary{cursor:pointer;font-size:12.5px;font-weight:650;color:var(--tx)}
 
 /* ---------- bottom nav ---------- */
 .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--bd);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(env(safe-area-inset-bottom) + 6px)}
-.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px;padding:6px 2px;border:0;background:transparent;border-radius:12px;font-size:10.5px;font-weight:500;color:var(--muted)}
+.bottom-nav-3{grid-template-columns:repeat(3,1fr)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px;padding:6px 2px;border:0;background:transparent;border-radius:12px;font-size:11.5px;font-weight:500;color:var(--muted)}
 .nav-btn.current{font-weight:750;color:var(--g);opacity:1}
 .nav-btn svg{width:21px;height:21px}
 
